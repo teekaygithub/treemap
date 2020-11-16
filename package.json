@@ -1,0 +1,16 @@
+{
+  "name": "treemap",
+  "version": "1.0.0",
+  "description": "Freecodecamp project: treemap diagram",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tom Kato",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6"
+  }
+}

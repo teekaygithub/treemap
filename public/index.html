@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./index.css" />
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <title>Video Game Sales</title>
+</head>
+<body>
+    <div id="container">
+        <h3 id="title">Video Game Sales</h3>
+        <p id="description" style="font-size:18px">Top 100 video games sold by platform</p>
+        <svg id="treemap"></svg>
+        <svg id="legend"></svg>
+    </div>
+    <script>
+        d3.json("https://cdn.freecodecamp.org/testable-projects-fcc/data/tree_map/video-game-sales-data.json")
+          .then(function(data) {
+            <!-- console.log(data);      // debug -->
+            const CONSOLES = data.children;
+            <!-- const CONSOLE_AREA = {} -->
+            <!-- CONSOLES.forEach(x=>console.log(x.name)); -->
+            <!-- CONSOLES.forEach(x=>console.log(x.name, x.children.reduce(function(acc,cv) {return acc + parseFloat(cv.value)}, 0))); -->
+            <!-- CONSOLES.forEach(x=>CONSOLE_AREA[x.name]=x.children.reduce(function(acc,cv) {return acc + parseFloat(cv.value)}, 0)); -->
+            <!-- console.log(CONSOLE_AREA); -->
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+            const node = d3.hierarchy(data)
+                         .sum(d=>d.value)
+                         .sort((a,b)=>b.value-a.value);
+                         
+            let treemap = d3.treemap()
+                            .size([1000,600])
+                            .padding(1)
+                            .round(true)(node)
+                               
+            const svg = d3.select("#treemap").attr("width",1000).attr("height",600);
+            
+            const root = treemap;
+            const leaf = svg.selectAll("g")
+               .data(treemap.leaves())
+               .join("g")
+               .attr("class","tile")
+               .attr("id",d=>d.data.name)
+               .attr("transform",d=>`translate(${d.x0}, ${d.y0})`);
+               
+            leaf.append("rect")
+            .attr("fill",d=>{while(d.depth > 1) d=d.parent; return color(d.data.name)})
+            .attr("width",d=>d.x1-d.x0)
+            .attr("height",d=>d.y1-d.y0)
+            .attr("x-coordinate", d=>d.x0)
+            .attr("y-coordinate", d=>d.y0)
+            .attr("data-name",d=>d.data.name)
+            .attr("data-category",d=>d.data.category)
+            .attr("data-value",d=>d.data.value)
+            .attr("class","tile")
+            .on("mouseover",mouseover)
+            .on("mouseout",mouseout);
+            <!-- leaf.append("text").selectAll("tspan").data(d=>d.data.name).join("tspan").text(d=>d.data.name); -->
+            
+            <!-- LEGEND -->
+            const legend = d3.select("#legend").append("g").attr("width",50).attr("height",50);
+            
+            <!-- TOOLTIP -->
+            let tooltip = d3.select("#container")
+                            .append("div")
+                            .attr("class","tooltip")
+                            .attr("id","tooltip")
+                            .style("width" ,"200px")
+                            .style("height", "50px")
+                            .style("display","none");
+                            
+            function mouseover() {
+                const current = d3.select(this);
+                let leftOffset = parseInt(current.attr("x-coordinate"))+50;
+                let topOffset = parseInt(current.attr("y-coordinate"))+300;
+                <!-- console.log("current position: ",current.attr('x'),current.attr('y')); //debug -->
+                tooltip.style("display","inline")
+                       .style("left",leftOffset.toString()+"px")
+                       .style("top",topOffset.toString()+"px")
+                       .attr("data-name",current.attr("data-name"))
+                       .attr("data-value",current.attr("data-value"))
+                       .html(`${current.attr("data-name")}<br>${current.attr("data-value")}`);
+                       <!-- .html(current.attr("data-year")+" "+months[current.attr("data-month")]+"<br>"+current.attr("data-temp")+"C<br>"+current.attr("data-var")+"C"); -->
+            }
+            
+            function mouseout () {
+                tooltip.style("display","none");
+            }
+
+          })
+    </script>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+</body>
+</html>
